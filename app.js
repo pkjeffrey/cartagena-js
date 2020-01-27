@@ -1,5 +1,5 @@
 const playerColors = ['red', 'yellow', 'green', 'blue', 'brown'];
-const symbols = ['sword', 'parrot', 'hook', 'skull', 'treasure', 'rum'];
+const symbols = ['Sword', 'Parrot', 'Hook', 'Skull', 'Treasure', 'Rum'];
 const playerTokens = 6;
 
 let randomIndexes = function(num) {
@@ -77,13 +77,13 @@ let board = (function() {
     return {
         init: function(colors) {
             let board = new Array();
-            board.push(initSpace("start", colors, playerTokens));
+            board.push(initSpace("Start", colors, playerTokens));
             for (let i = 0; i < 6; i++) {
                 board.push(symbols.shuffle().map(function(symbol) {
                     return initSpace(symbol, colors, 0);
                 }));
             }
-            board.push(initSpace("sloop", colors, 0));
+            board.push(initSpace("Sloop", colors, 0));
             spaces = board.flat();
         },
         isPlayerOnSpace: function(playerColor, space) {
@@ -117,8 +117,41 @@ let board = (function() {
     };
 })();
 
-let controller = (function(deck, board) {
-    var players; // {"red" => {name: "Peter", cards: Map(6)}, "yellow" => {name: "Ralph", cards: Map(6)}, ...}
+let ui = (function() {
+    let updateSpace = function(space, idx, colors) {
+        let s = document.getElementById("space-" + idx);
+        if (idx === 0 || idx === 37) {
+            // todo
+        } else {
+            let i = 1;
+            let ps = s.querySelector(".players");
+            ps.innerHTML = '<div class="player player-1"></div><div class="player player-2"></div><div class="player player-3"></div>';
+            colors.forEach((color) => {
+                for (var j = 0; j < space.get(color); j++) {
+                    ps.querySelector(".player-" + i++).classList.add("player-" + color);
+                }
+            });
+        }
+    };
+
+    return {
+        initBoard: function(spaces, colors) {
+            let start = document.getElementById("space-0");
+            let sloop = document.getElementById("space-37");
+            for (var i = colors.length; i < 5; i++) {
+                start.querySelector(".player-" + (i + 1)).style.display = "none";
+                sloop.querySelector(".player-" + (i + 1)).style.display = "none";
+            }
+            this.updateBoard(spaces, colors);
+        },
+        updateBoard: function(spaces, colors) {
+            spaces.map((space, idx) => updateSpace(space, idx, colors));
+        }
+    };
+})();
+
+let controller = (function(deck, board, ui) {
+    var players; // {"red" => {name: "Peter", cards: {"sword" => 0, "parrot" => 2, ...}}, "yellow" => {name: "Ralph", cards: Map(6)}, ...}
 
     let emptyHand = function() {
         return symbols.reduce(function(acc, symbol) {
@@ -146,6 +179,7 @@ let controller = (function(deck, board) {
             deck.init();
             board.init(colors);
             initPlayers(colors, playerNames);
+            ui.initBoard(board.peekBoard(), colors);
         },
         colorsInPlay: function() {
             return Array.from(players.keys());
@@ -154,4 +188,4 @@ let controller = (function(deck, board) {
             return players;
         }
     };
-})(deck, board);
+})(deck, board, ui);
