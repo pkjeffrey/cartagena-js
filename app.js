@@ -111,7 +111,7 @@ let board = (function() {
         winningColor: function(playerColors) {
             return playerColors.filter(color => spaces[sloop].get(color) === playerTokens)[0];
         },
-        peekBoard: function() {
+        getSpaces: function() {
             return spaces;
         }
     };
@@ -120,15 +120,22 @@ let board = (function() {
 let ui = (function() {
     let updateSpace = function(space, idx, colors) {
         let s = document.getElementById("space-" + idx);
+        s.firstChild.nodeValue = space.get("symbol");
         if (idx === 0 || idx === 37) {
-            // todo
+            colors.forEach((color, idx) => {
+                let ps = s.querySelector(".player-" + (idx + 1));
+                ps.innerHTML = '<div class="playerToken piece-1"></div><div class="playerToken piece-2"></div><div class="playerToken piece-3"></div><div class="playerToken piece-4"></div><div class="playerToken piece-5"></div><div class="playerToken piece-6"></div>';
+                for (var j = 0; j < space.get(color); j++) {
+                    ps.querySelector(".piece-" + (j + 1)).classList.add("playerToken-" + color);
+                }
+            });
         } else {
             let i = 1;
-            let ps = s.querySelector(".players");
-            ps.innerHTML = '<div class="player player-1"></div><div class="player player-2"></div><div class="player player-3"></div>';
+            let ps = s.querySelector(".playersOnSpace");
+            ps.innerHTML = '<div class="playerToken player-1"></div><div class="playerToken player-2"></div><div class="playerToken player-3"></div>';
             colors.forEach((color) => {
                 for (var j = 0; j < space.get(color); j++) {
-                    ps.querySelector(".player-" + i++).classList.add("player-" + color);
+                    ps.querySelector(".player-" + i++).classList.add("playerToken-" + color);
                 }
             });
         }
@@ -138,6 +145,10 @@ let ui = (function() {
         initBoard: function(spaces, colors) {
             let start = document.getElementById("space-0");
             let sloop = document.getElementById("space-37");
+            for (var i = 0; i < colors.length; i++) {
+                start.querySelector(".player-" + (i + 1)).style.display = "block";
+                sloop.querySelector(".player-" + (i + 1)).style.display = "block";
+            }
             for (var i = colors.length; i < 5; i++) {
                 start.querySelector(".player-" + (i + 1)).style.display = "none";
                 sloop.querySelector(".player-" + (i + 1)).style.display = "none";
@@ -146,6 +157,21 @@ let ui = (function() {
         },
         updateBoard: function(spaces, colors) {
             spaces.map((space, idx) => updateSpace(space, idx, colors));
+        },
+        initPlayers: function(players) {
+            let colors = Array.from(players.keys());
+            for (var i = 0; i < colors.length; i++) {
+                let p = document.getElementById("player-" + (i + 1));
+                p.style.display = "grid";
+                p.querySelector(".playerColor").classList.add("playerToken-" + colors[i]);
+                p.querySelector(".playerName").textContent = players.get(colors[i]).name;
+            }
+            for (var i = colors.length; i < 5; i++) {
+                document.getElementById("player-" + (i + 1)).style.display = "none";
+            }
+        },
+        updatePlayers: function() {
+            
         }
     };
 })();
@@ -179,7 +205,8 @@ let controller = (function(deck, board, ui) {
             deck.init();
             board.init(colors);
             initPlayers(colors, playerNames);
-            ui.initBoard(board.peekBoard(), colors);
+            ui.initBoard(board.getSpaces(), colors);
+            ui.initPlayers(players);
         },
         colorsInPlay: function() {
             return Array.from(players.keys());

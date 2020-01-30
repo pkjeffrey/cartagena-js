@@ -25,10 +25,11 @@ body {
 
 .board {
     background-color: papayawhip;
-    padding: 5px;
+    border: 1px solid black;
+    padding: 15px;
     display: grid;
-    grid-template-columns: repeat(12, 100px);
-    grid-template-rows: repeat(7, 100px);
+    grid-template-columns: repeat(12, 70px);
+    grid-template-rows: repeat(7, 70px);
 }
 
 .space {
@@ -77,20 +78,28 @@ body {
 #space-36 {grid-column: 11; grid-row: 5;}
 #space-37 {grid-column: 11 / 13; grid-row: 6 / 8;}
 
-.players {
+.playersOnSpace {
     padding: 3px;
 }
-.player {
-    width: 26px;
-    height: 26px;
+.playerToken {
+    width: 16px;
+    height: 16px;
     margin-right: 3px;
     margin-bottom: 3px;
     border: 1px solid lightgrey;
-    border-radius: 13px;
+    border-radius: 8px;
     float: left;
 }
-.player-red {background-color: red;}
-.player-yellow {background-color: yellow;}
-.player-green {background-color: green;}
-.player-blue {background-color: blue;}
-.player-brown {background-color: brown;}
+.playerToken-red {background-color: red;}
+.playerToken-yellow {background-color: yellow;}
+.playerToken-green {background-color: green;}
+.playerToken-blue {background-color: blue;}
+.playerToken-brown {background-color: brown;}
+
+.player {
+    padding: 3px;
+    display: grid;
+    grid-template-columns: 16px repeat(9, 95px);
+}
+.playerColor {grid-column: 1;}
+.playerName {grid-column: 2;}
