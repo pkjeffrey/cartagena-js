@@ -20,6 +20,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.3);
+    display: flex;
     overflow: hidden;
 }
 
@@ -99,7 +100,15 @@ body {
 .player {
     padding: 3px;
     display: grid;
-    grid-template-columns: 16px repeat(9, 95px);
+    grid-template-rows: repeat(9, 70px);
+    text-align: center;
 }
-.playerColor {grid-column: 1;}
-.playerName {grid-column: 2;}
+.action {
+    background-color: whitesmoke;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+.selected {
+    border: 3px solid orange;
+}

@@ -158,26 +158,92 @@ let ui = (function() {
         updateBoard: function(spaces, colors) {
             spaces.map((space, idx) => updateSpace(space, idx, colors));
         },
-        initPlayers: function(players) {
-            let colors = Array.from(players.keys());
-            for (var i = 0; i < colors.length; i++) {
-                let p = document.getElementById("player-" + (i + 1));
-                p.style.display = "grid";
-                p.querySelector(".playerColor").classList.add("playerToken-" + colors[i]);
-                p.querySelector(".playerName").textContent = players.get(colors[i]).name;
-            }
-            for (var i = colors.length; i < 5; i++) {
-                document.getElementById("player-" + (i + 1)).style.display = "none";
-            }
-        },
-        updatePlayers: function() {
-            
+        updatePlayer: function(player, playerColor) {
+            let c = document.getElementById("playerColorName");
+            c.innerHTML = '<div class="playerToken"></div>' + player.name;
+            c.querySelector(".playerToken").classList.add("playerToken-" + playerColor);
+            player.cards.forEach((count, card) => {
+                c = document.getElementById("action" + card)
+                c.innerHTML = '<p>' + card + '</p><p>x' + count + '</p>';
+            })
         }
     };
 })();
 
 let controller = (function(deck, board, ui) {
+    var colorsInPlay; // ["red", "yellow"]
     var players; // {"red" => {name: "Peter", cards: {"sword" => 0, "parrot" => 2, ...}}, "yellow" => {name: "Ralph", cards: Map(6)}, ...}
+    var activePlayer, playerTurns, selectedSpace, selectedAction;
+
+    let resetSelectedSpace = function() {
+        if (selectedSpace !== undefined) {
+            document.getElementById("space-" + selectedSpace).classList.remove("selected");
+            selectedSpace = undefined;
+        }
+    };
+
+    let resetSelectedAction = function() {
+        if (selectedAction !== undefined) {
+            document.getElementById("action" + selectedAction).classList.remove("selected");
+            selectedAction = undefined;
+        }
+    };
+
+    let initEventListeners = function() {
+        board.getSpaces().forEach((_, idx) => {
+            document.getElementById("space-" + idx).addEventListener("click", function(){spaceClicked(idx)});
+        });
+        document.getElementById("actionPass").addEventListener("click", function(){actionClicked("Pass")});
+        document.getElementById("actionBack").addEventListener("click", function(){actionClicked("Back")});
+        symbols.forEach((symbol) => {
+            document.getElementById("action" + symbol).addEventListener("click", function(){actionClicked(symbol)});
+        });
+    };
+
+    let spaceClicked = function(space) {
+        resetSelectedSpace();
+        selectedSpace = space;
+        document.getElementById("space-" + selectedSpace).classList.add("selected");
+        makeTurn();
+    };
+
+    let actionClicked = function(action) {
+        resetSelectedAction();
+        selectedAction = action;
+        document.getElementById("action" + selectedAction).classList.add("selected");
+        makeTurn();
+    };
+
+    let makeTurn = function() {
+        let activePlayerColor = colorsInPlay[activePlayer];
+        if (selectedAction === "Pass") {
+            resetSelectedAction();
+            resetSelectedSpace();
+            nextPlayer();
+        } else if (selectedAction !== undefined && selectedSpace !== undefined) {
+            let playerCards = players.get(activePlayerColor).cards;
+            if (selectedAction === "Back") {
+                let cardsToPickUp = board.movePlayerBackward(activePlayerColor, selectedSpace);
+                while (cardsToPickUp > 0) {
+                    let card = deck.drawCard();
+                    playerCards.set(card, playerCards.get(card) + 1);
+                }
+                resetSelectedAction();
+                resetSelectedSpace();
+                playerTurns--;
+            } else if (playerCards.get(selectedAction) > 0) {
+                board.movePlayerForward(activePlayerColor, selectedSpace, selectedAction);
+                playerCards.set(selectedAction, playerCards.get(selectedAction) - 1);
+                deck.returnCard(selectedAction);
+                resetSelectedAction();
+                resetSelectedSpace();
+                playerTurns--;
+            }
+            if (playerTurns === 0) {
+                nextPlayer();
+            }
+        }
+    };
 
     let emptyHand = function() {
         return symbols.reduce(function(acc, symbol) {
@@ -199,17 +265,25 @@ let controller = (function(deck, board, ui) {
         players.forEach(player => dealStartHand(player));
     };
 
+    let nextPlayer = function() {
+        activePlayer = (activePlayer + 1) % colorsInPlay.length;
+        playerTurns = 3;
+    };
+
     return {
         init: function(playerNames) {
-            let colors = playerColors.slice(0, playerNames.length);
+            colorsInPlay = playerColors.slice(0, playerNames.length);
             deck.init();
-            board.init(colors);
-            initPlayers(colors, playerNames);
-            ui.initBoard(board.getSpaces(), colors);
-            ui.initPlayers(players);
+            board.init(colorsInPlay);
+            initPlayers(colorsInPlay, playerNames);
+            ui.initBoard(board.getSpaces(), colorsInPlay);
+            activePlayer = -1;
+            nextPlayer();
+            ui.updatePlayer(players.get(colorsInPlay[activePlayer]), colorsInPlay[activePlayer]);
+            initEventListeners();
         },
         colorsInPlay: function() {
-            return Array.from(players.keys());
+            return colorsInPlay;
         },
         peekPlayers: function() {
             return players;
