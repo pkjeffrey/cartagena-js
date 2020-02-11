@@ -227,6 +227,7 @@ let controller = (function(deck, board, ui) {
                 while (cardsToPickUp > 0) {
                     let card = deck.drawCard();
                     playerCards.set(card, playerCards.get(card) + 1);
+                    cardsToPickUp--;
                 }
                 resetSelectedAction();
                 resetSelectedSpace();
@@ -238,11 +239,16 @@ let controller = (function(deck, board, ui) {
                 resetSelectedAction();
                 resetSelectedSpace();
                 playerTurns--;
+                if (board.winningColor(colorsInPlay) === activePlayerColor) {
+                    alert(players.get(activePlayerColor).name + " is the winner!");
+                }
             }
             if (playerTurns === 0) {
                 nextPlayer();
             }
         }
+        ui.updatePlayer(players.get(colorsInPlay[activePlayer]), colorsInPlay[activePlayer]);
+        ui.updateBoard(board.getSpaces(), colorsInPlay);
     };
 
     let emptyHand = function() {
