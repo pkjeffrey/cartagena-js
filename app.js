@@ -120,7 +120,7 @@ let board = (function() {
 let ui = (function() {
     let updateSpace = function(space, idx, colors) {
         let s = document.getElementById("space-" + idx);
-        s.firstChild.nodeValue = space.get("symbol");
+        // s.firstChild.nodeValue = space.get("symbol");
         if (idx === 0 || idx === 37) {
             colors.forEach((color, idx) => {
                 let ps = s.querySelector(".player-" + (idx + 1));
@@ -130,6 +130,7 @@ let ui = (function() {
                 }
             });
         } else {
+            s.style.backgroundImage = "url(" + space.get("symbol") + ".png)";
             let i = 1;
             let ps = s.querySelector(".playersOnSpace");
             ps.innerHTML = '<div class="playerToken player-1"></div><div class="playerToken player-2"></div><div class="playerToken player-3"></div>';
@@ -163,8 +164,8 @@ let ui = (function() {
             c.innerHTML = '<div class="playerToken"></div>' + player.name;
             c.querySelector(".playerToken").classList.add("playerToken-" + playerColor);
             player.cards.forEach((count, card) => {
-                c = document.getElementById("action" + card)
-                c.innerHTML = '<p>' + card + '</p><p>x' + count + '</p>';
+                c = document.getElementById("action" + card);
+                c.innerHTML = '<p>x' + count + '</p>';
             })
         }
     };
